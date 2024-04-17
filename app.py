@@ -1,39 +1,92 @@
-#!/usr/bin/env python
-from importlib import import_module
-import os
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, request, Response, redirect, url_for
+from flask_bootstrap import Bootstrap
 
-# import camera driver
-if os.environ.get('CAMERA'):
-    Camera = import_module('camera_' + os.environ['CAMERA']).Camera
-else:
-    from camera import Camera
-
-# Raspberry Pi camera module (requires picamera package)
-# from camera_pi import Camera
-
-app = Flask(__name__)
+from yolo import *
+from camera import *
 
 
-@app.route('/')
-def index():
-    """Video streaming home page."""
-    return render_template('index.html')
+application = Flask(__name__)
+Bootstrap(application)
 
 
-def gen(camera):
-    """Video streaming generator function."""
-    while True:
-        frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+check_settings()
+VIDEO = VideoStreaming()
 
-@app.route('/video_feed')
+
+@application.route("/")
+def home():
+    TITLE = "Object detection"
+    return render_template("index.html", TITLE=TITLE)
+
+
+@application.route("/video_feed")
 def video_feed():
-    """Video streaming route. Put this in the src attribute of an img tag."""
-    return Response(gen(Camera()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    """
+    Video streaming route.
+    """
+    return Response(
+        VIDEO.show(),
+        mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', threaded=True)
+# * Button requests
+@application.route("/request_preview_switch")
+def request_preview_switch():
+    old_preview = VIDEO.preview
+    VIDEO.preview = not VIDEO.preview
+    print("*" * 10, "Preview toggled from", old_preview, "to", VIDEO.preview)
+    return f"Preview switched from {old_preview} to {VIDEO.preview}"
+
+
+@application.route("/request_flipH_switch")
+def request_flipH_switch():
+    VIDEO.flipH = not VIDEO.flipH
+    print("*"*10, VIDEO.flipH)
+    return "nothing"
+
+
+@application.route("/request_model_switch")
+def request_model_switch():
+    VIDEO.detect = not VIDEO.detect
+    print("*"*10, VIDEO.detect)
+    return "nothing"
+
+
+@application.route("/request_exposure_down")
+def request_exposure_down():
+    VIDEO.exposure -= 1
+    print("*"*10, VIDEO.exposure)
+    return "nothing"
+
+
+@application.route("/request_exposure_up")
+def request_exposure_up():
+    VIDEO.exposure += 1
+    print("*"*10, VIDEO.exposure)
+    return "nothing"
+
+
+@application.route("/request_contrast_down")
+def request_contrast_down():
+    VIDEO.contrast -= 4
+    print("*"*10, VIDEO.contrast)
+    return "nothing"
+
+
+@application.route("/request_contrast_up")
+def request_contrast_up():
+    VIDEO.contrast += 4
+    print("*"*10, VIDEO.contrast)
+    return "nothing"
+
+
+@application.route("/reset_camera")
+def reset_camera():
+    STATUS = reset_settings()
+    print("*"*10, STATUS)
+    return "nothing"
+
+
+if __name__ == "__main__":
+    application.run(debug=True)
