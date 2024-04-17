@@ -2,14 +2,11 @@ from flask import Flask, render_template, request, Response, redirect, url_for
 from flask_bootstrap import Bootstrap
 
 from yolo import *
-from camera import *
 
 
 application = Flask(__name__)
 Bootstrap(application)
 
-
-check_settings()
 VIDEO = VideoStreaming()
 
 
@@ -50,41 +47,6 @@ def request_flipH_switch():
 def request_model_switch():
     VIDEO.detect = not VIDEO.detect
     print("*"*10, VIDEO.detect)
-    return "nothing"
-
-
-@application.route("/request_exposure_down")
-def request_exposure_down():
-    VIDEO.exposure -= 1
-    print("*"*10, VIDEO.exposure)
-    return "nothing"
-
-
-@application.route("/request_exposure_up")
-def request_exposure_up():
-    VIDEO.exposure += 1
-    print("*"*10, VIDEO.exposure)
-    return "nothing"
-
-
-@application.route("/request_contrast_down")
-def request_contrast_down():
-    VIDEO.contrast -= 4
-    print("*"*10, VIDEO.contrast)
-    return "nothing"
-
-
-@application.route("/request_contrast_up")
-def request_contrast_up():
-    VIDEO.contrast += 4
-    print("*"*10, VIDEO.contrast)
-    return "nothing"
-
-
-@application.route("/reset_camera")
-def reset_camera():
-    STATUS = reset_settings()
-    print("*"*10, STATUS)
     return "nothing"
 
 
