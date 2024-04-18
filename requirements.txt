@@ -1,0 +1,6 @@
+Flask
+Flask-Bootstrap
+requests
+opencv-python-headless
+numpy
+google-cloud-storage
