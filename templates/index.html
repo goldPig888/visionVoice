@@ -9,36 +9,41 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center">{{ TITLE }}</h1>
-        <div id="video-container" class="text-center"> 
+        <div id="video-container" class="text-center">
             <img id="videoElement" src="{{ url_for('video_feed') }}" alt="Video feed" style="max-width: 100%; height: auto;">
         </div>
-        <!--
         <div class="controls text-center mt-3">
             <button onclick="togglePreview()" class="btn btn-primary">Toggle Preview</button>
             <button onclick="toggleFlipH()" class="btn btn-secondary">Flip Horizontal</button>
-            <button onclick="toggleModel()" class="btn btn-success">Toggle Model Detection</button>-->
+            <button onclick="toggleModel()" class="btn btn-success">Toggle Model Detection</button>
         </div>
     </div>
 
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script>
-       
+        var socket = io();
+        
+        socket.on('frame', function(data) {
+            document.getElementById('videoElement').src = 'data:image/jpeg;base64,' + data.image;
+        });
+
 
         function togglePreview() {
-            fetch('/request_preview_switch', { method: 'POST' })
+            fetch('/request_preview_switch', {method: 'POST'})
                 .then(response => response.json())
                 .then(data => console.log('Preview State:', data))
                 .catch(error => console.error('Error:', error));
         }
 
         function toggleFlipH() {
-            fetch('/request_flipH_switch', { method: 'POST' })
+            fetch('/request_flipH_switch', {method: 'POST'})
                 .then(response => response.json())
                 .then(data => console.log('Flip Horizontal State:', data))
                 .catch(error => console.error('Error:', error));
         }
 
         function toggleModel() {
-            fetch('/request_model_switch', { method: 'POST' })
+            fetch('/request_model_switch', {method: 'POST'})
                 .then(response => response.json())
                 .then(data => console.log('Model Detection State:', data))
                 .catch(error => console.error('Error:', error));

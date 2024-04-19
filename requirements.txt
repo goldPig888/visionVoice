@@ -5,3 +5,5 @@ opencv-python-headless
 numpy
 google-cloud-storage
 wheel
+gunicorn
+flask-socketio
