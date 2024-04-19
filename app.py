@@ -4,6 +4,7 @@ import threading
 import requests
 from yolo import VideoStreaming
 import os
+import time
 
 application = Flask(__name__)
 Bootstrap(application)
@@ -78,6 +79,39 @@ def request_model_switch():
     VIDEO.detect = not VIDEO.detect
     return jsonify({"new_detection_state": VIDEO.detect})
 
+@application.route("/detection_data")
+def detection_data():
+    if VIDEO is None or not VIDEO.detect:
+        time.sleep(5)
+        return jsonify({"error": "Detection not active or camera not initialized"}), 503
+    data = VIDEO.get_latest_detections()
+    return jsonify(data)
+
+def periodic_task():
+    while True:
+        if VIDEO and VIDEO.model_loaded:
+            try:
+                response = requests.get('http://127.0.0.1:5000/detection_data')
+                print("Periodic update:", response.json())
+            except Exception as e:
+                print("Failed to trigger periodic update:", str(e))
+                time.sleep(5)
+            time.sleep(.3)
+        else:
+            time.sleep(5)
+
+task_thread = None
+@application.route('/start_periodic_task')
+def start_periodic_task():
+    global task_thread
+    if not task_thread or not task_thread.is_alive():
+        task_thread = threading.Thread(target=periodic_task)
+        task_thread.daemon = True
+        task_thread.start()
+        return jsonify({'status': 'Periodic task started'}), 200
+    else:
+        return jsonify({'status': 'Periodic task is already running'}), 200
+
 
 if __name__ == "__main__":
-    application.run(debug=True, host='0.0.0.0', port=5000)
+    application.run(debug=False, host='0.0.0.0', port=5000)

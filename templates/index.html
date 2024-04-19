@@ -9,7 +9,7 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center">{{ TITLE }}</h1>
-        <div id="video-container" class="text-center">
+        <div id="video-container" class="text-center"> 
             <img id="videoElement" src="{{ url_for('video_feed') }}" alt="Video feed" style="max-width: 100%; height: auto;">
         </div>
         <div class="controls text-center mt-3">
@@ -20,6 +20,7 @@
     </div>
 
     <script>
+       
 
         function togglePreview() {
             fetch('/request_preview_switch', { method: 'POST' })
